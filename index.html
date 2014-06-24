@@ -1,0 +1,577 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>hello phaser!</title>
+        <script src="phaser.min.js"></script>
+    </head>
+    <body>
+
+    <script type="text/javascript">
+    window.onload = function() {
+
+        var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create });
+        function preload () {
+        	var style = { font: "34px Segopr", fill: "#000000", align: "left" };
+
+        	game.load.image('furnance', 'assets/furnance.png');
+        	game.load.image('chimney', 'assets/chimney.png');
+        	game.load.image('basin', 'assets/recBasin.png');
+        	game.load.image('tap', 'assets/waterTap.png');
+        	game.load.image('plasticBasin', 'assets/plasticBasin.png');
+			game.load.image('glasBasin', 'assets/glasBasin.png');
+			game.load.image('bioMuell', 'assets/bioMuell.png');
+			//game.load.image('specialTrash', 'assets/specialTrash.png');
+
+        	game.load.image('flask', 'assets/flasche.png');
+        	game.load.image('bandSlot', 'assets/bandSlot.png');
+        	game.load.image('bandSlot2', 'assets/bandSlot2.png');
+
+        	game.load.image('Apfel', 'assets/muell/bio/apfel.png');
+		    game.load.image('Teebeutel', 'assets/muell/bio/teebeutel.png');
+
+		    game.load.image('Brot', 'assets/muell/bio/brot.png');
+		    game.load.image('Fischgraete', 'assets/muell/bio/fischgraete.png');
+		    game.load.image('Gemuese', 'assets/muell/bio/gemuese.png');
+		    game.load.image('Laub', 'assets/muell/bio/laub.png');
+		    game.load.image('Bananenschale', 'assets/muell/bio/bananenschale.png');
+
+		    game.load.image('Braunglas', 'assets/muell/glas/braunglas.png');
+		    game.load.image('Nutellaglas', 'assets/muell/glas/nutellaglas.png');
+		    game.load.image('Weinflasche', 'assets/muell/glas/weinflasche.png');
+
+		    game.load.image('Duschgel', 'assets/muell/gruener_punkt/duschgel.png');
+		    game.load.image('Joghurtbecher', 'assets/muell/gruener_punkt/joghurtbecher.png');
+		    game.load.image('Konserve', 'assets/muell/gruener_punkt/konserve.png');
+		    game.load.image('Plastikbeutel', 'assets/muell/gruener_punkt/plastikbeutel.png');
+		    game.load.image('Tetrapack', 'assets/muell/gruener_punkt/tetrapack.png');
+
+		    game.load.image('Briefumschlaege', 'assets/muell/papier/briefumschlaege.png');
+		    game.load.image('Karton', 'assets/muell/papier/karton.png');
+		    game.load.image('Zeitung', 'assets/muell/papier/zeitung.png');
+
+		    game.load.image('Asche', 'assets/muell/rest/asche.png');
+		    game.load.image('Hundehaufen', 'assets/muell/rest/hundehaufen.png');
+		    game.load.image('Kugelschreiber', 'assets/muell/rest/kugelschreiber.png');
+		    game.load.image('Spielzeug', 'assets/muell/rest/spielzeug.png');
+
+		    game.load.image('Batterie', 'assets/muell/sonder/batterie.png');
+		    game.load.image('Energiesparlampe', 'assets/muell/sonder/energiesparlampe.png');
+
+		    game.load.audio('clapping', 'assets/clapping.ogg');
+			game.load.audio('falseError', 'assets/falseError.ogg');
+
+
+        }
+        const FURNANCESIZE = 2;
+        const FURNANCEXPOS = 400;
+        const FURNANCEYPOS = 80;
+        const CHIMNEYSIZE = 4;
+
+        const BASINSIZE = 4;
+        const BASINXPOS = 100;
+        const BASINYPOS = 480;
+
+        const PLASBASINSIZE = 4;
+        const PLASBASINXPOS = 50;
+        const PLASBASINYPOS = 50;
+
+        const GLASBASINSIZE = 4;
+        const GLASBASINXPOS = 600;
+        const GLASBASINYPOS = 400;
+
+        const BIOBASINSIZE = 4;
+        const BIOBASINXPOS = 600;
+        const BIOBASINYPOS = 50;
+
+        var style = { font: "18px Arial", fill: "#000000", align: "left" };
+
+        var gamePoints = 0;
+        
+
+        var bandTimer;
+        var bandCounter = 0;
+
+		var furnance;
+        var furnanceFill = 0;
+        var chimney;
+        var chimneyFill = 0;
+
+        var basin;
+        var basinPaperFill = 0;
+        var basinWaterFill = 0;
+        var tap;
+
+        var plasticBasin;
+        var plasticBasinFill = 0;
+
+        var glasBasin;
+        var glasBasinFill = 0;
+
+        var bioBasin;
+        var bioBasinFill = 0;
+
+        var bioBasin;
+        var bioBasinFill = 0;
+
+        var bandSlots;
+        var trashItems;
+
+        function create () {
+            //var background = game.add.sprite(game.world.centerX, game.world.centerY, 'imgCh1Background');
+			//background.anchor.setTo(0.5, 0.5);
+
+			var dragImgs = game.add.group();
+			rest = new Array("Asche","Hundehaufen","Kugelschreiber","Spielzeug");
+		    papier = new Array("Briefumschlaege","Karton","Zeitung");
+		    gp = new Array("Konserve","Plastikbeutel","Duschgel","Joghurtbecher","Tetrapack");
+		    glas = new Array("Weinflasche","Nutellaglas","Braunglas");
+		    bio = new Array("Apfel","Teebeutel","Laub","Gemuese","Bananenschale","Brot","Fischgraete");
+		    sonder = new Array("Batterie","Energiesparlampe");
+
+
+			this.game.stage.backgroundColor = '#FFFF22';
+			
+
+			clapping = game.add.audio('clapping');
+            falseSound = game.add.audio('falseError');
+
+			
+			furnance = game.add.sprite(FURNANCEXPOS, FURNANCEYPOS, 'furnance');
+			furnance.inputEnabled = true;
+			furnance.pointerOver = true;
+			furnance.events.onInputDown.add(furnanceClicked, this);
+
+			furnanceFillText = game.add.text(FURNANCEXPOS, FURNANCEYPOS, furnanceFill, style);
+		   	furnanceFillText.visible = true;
+		   	furnanceFillText.setText(furnanceFill);
+
+		   	chimney = game.add.sprite(FURNANCEXPOS + 70, FURNANCEYPOS - 75, 'chimney');
+		   	chimney.inputEnabled = true;
+		   	chimney.pointerOver = true;
+		   	chimney.events.onInputDown.add(chimneyClicked, this);
+
+		   	chimneyFillText = game.add.text(FURNANCEXPOS + 110, FURNANCEYPOS - 20, chimneyFill, style);
+		   	chimneyFillText.visible = true;
+		   	chimneyFillText.setText(chimneyFill);
+
+		    basin = game.add.sprite(BASINXPOS, BASINYPOS, 'basin');
+		    basin.inputEnabled = true;
+		    basin.pointerOver = true;
+		    basin.events.onInputDown.add(basinClicked, this);
+
+ 			basinPaperFillText = game.add.text(BASINXPOS + 20, BASINYPOS + 30, basinPaperFill, style);
+ 			basinPaperFillText.visible = true;
+ 			basinPaperFillText.setText(basinPaperFill);
+
+  			basinWaterFillText = game.add.text(BASINXPOS + 65, BASINYPOS + 30, basinWaterFill, style);
+ 			basinWaterFillText.visible = true;
+ 			basinWaterFillText.setText(basinWaterFill);
+
+ 			tap = game.add.sprite(BASINXPOS + 70, BASINYPOS - 40, 'tap');
+		    tap.inputEnabled = true;
+		    tap.pointerOver = true;
+		    tap.events.onInputDown.add(tapClicked, this);
+
+		    plasticBasin = game.add.sprite(PLASBASINXPOS, PLASBASINYPOS, 'plasticBasin');
+		    plasticBasin.inputEnabled = true;
+		    plasticBasin.pointerOver = true;
+		    plasticBasin.events.onInputDown.add(plasticBasinClicked, this);
+
+		    plasticBasinFillText = game.add.text(PLASBASINXPOS + 20, PLASBASINYPOS + 30, plasticBasinFill, style);
+ 			plasticBasinFillText.visible = true;
+ 			plasticBasinFillText.setText(plasticBasinFill);
+
+ 			glasBasin = game.add.sprite(GLASBASINXPOS, GLASBASINYPOS, 'glasBasin');
+		    glasBasin.inputEnabled = true;
+		    glasBasin.pointerOver = true;
+		    glasBasin.events.onInputDown.add(glasBasinClicked, this);
+
+		    glasBasinFillText = game.add.text(GLASBASINXPOS + 20, GLASBASINYPOS + 30, glasBasinFill, style);
+ 			glasBasinFillText.visible = true;
+ 			glasBasinFillText.setText(glasBasinFill);
+
+ 			bioBasin = game.add.sprite(BIOBASINXPOS, BIOBASINYPOS, 'bioMuell');
+		    bioBasin.inputEnabled = true;
+		    bioBasin.pointerOver = true;
+		    bioBasin.events.onInputDown.add(bioBasinClicked, this);
+
+		    bioBasinFillText = game.add.text(BIOBASINXPOS + 20, BIOBASINYPOS + 30, bioBasinFill, style);
+ 			bioBasinFillText.visible = true;
+ 			bioBasinFillText.setText(bioBasinFill);
+
+        	trashItems = game.add.group();
+        	bandSlots = game.add.group();
+
+		    for (var i = 0; i < 17; i++)
+		    {
+		    	if(i==16){
+		    		var tempSprite = bandSlots.create(-54 + i*50, 300, 'bandSlot2');
+		    	}
+		    	else{
+		        	var tempSprite = bandSlots.create(-50 + i*50, 300, 'bandSlot');
+		       	}
+		       	tempSprite.type = 0;
+		    }
+		    bandTimer = game.time.create(false);
+		   	bandTimer.loop(41, bandMove, this);
+		   	bandTimer.start();
+
+		   	pointsText = game.add.text(10, 10, gamePoints, style);
+		   	pointsText.visible = true;
+
+		}	
+
+
+		function check(spriteObject){
+
+			xPos = game.input.mousePointer.x
+			yPos = game.input.mousePointer.y
+
+			furnanceXMax = FURNANCEXPOS + furnance.width;
+			furnanceYMax = FURNANCEYPOS + furnance.height;
+
+			basinXMax = BASINXPOS + basin.width;
+			basinYMax = BASINYPOS + basin.height;
+
+			plasticBasinXMax = PLASBASINXPOS + plasticBasin.width;
+			plasticBasinYMax = PLASBASINYPOS + plasticBasin.height;
+
+			glasBasinXMax = GLASBASINXPOS + glasBasin.width;
+			glasBasinYMax = GLASBASINYPOS + glasBasin.height;
+
+			bioBasinXMax = BIOBASINXPOS + bioBasin.width;
+			bioBasinYMax = BIOBASINYPOS + bioBasin.height;
+
+			if(xPos < furnanceXMax && xPos > FURNANCEXPOS && yPos < furnanceYMax && yPos > FURNANCEYPOS){
+				if(spriteObject.trashtype == "Restmuell" && furnanceFill < FURNANCESIZE){
+					addPoints(1);
+	    			furnanceFill++;
+	    			furnanceFillText.setText(furnanceFill);
+	    			if(furnanceFill == FURNANCESIZE){
+	    				furnanceFillText.setText("OFEN VOLL!!");
+	    			}
+					spriteObject.kill();
+				}
+				else{
+					if(furnanceFill >= FURNANCESIZE){
+					}
+					spriteObject.reset(spriteObject.relX, spriteObject.relY);
+					spriteObject.dragged = false;
+				}
+				
+			}
+			else if(xPos < basinXMax && xPos > BASINXPOS && yPos < basinYMax && yPos > BASINYPOS){
+				if(spriteObject.trashtype == "Papier" && basinPaperFill < BASINSIZE){
+					addPoints(1);
+	    			basinPaperFill++;
+	    			basinPaperFillText.setText(basinPaperFill);
+	    			if(basinPaperFill == BASINSIZE){
+	    				basinPaperFillText.setText("VOLL!!");
+	    			}
+					spriteObject.kill();
+				}
+				else{
+					if(basinPaperFill >= BASINSIZE){
+					}
+					spriteObject.reset(spriteObject.relX, spriteObject.relY);
+					spriteObject.dragged = false;
+				}
+			}
+			else if(xPos < plasticBasinXMax && xPos > PLASBASINXPOS && yPos < plasticBasinYMax && yPos > PLASBASINYPOS){
+				if(spriteObject.trashtype == "Gelber Punkt" && plasticBasinFill < PLASBASINSIZE){
+					addPoints(1);
+	    			plasticBasinFill++;
+	    			plasticBasinFillText.setText(plasticBasinFill);
+	    			if(plasticBasinFill == PLASBASINSIZE){
+	    				plasticBasinFillText.setText("VOLL!!");
+	    			}
+					spriteObject.kill();
+				}
+				else{
+					if(plasticBasinFill >= PLASBASINSIZE){
+					}
+					spriteObject.reset(spriteObject.relX, spriteObject.relY);
+					spriteObject.dragged = false;
+				}
+			}
+			else if(xPos < glasBasinXMax && xPos > GLASBASINXPOS && yPos < glasBasinYMax && yPos > GLASBASINYPOS){
+				if(spriteObject.trashtype == "Glas" && glasBasinFill < GLASBASINSIZE){
+					addPoints(1);
+	    			glasBasinFill++;
+	    			glasBasinFillText.setText(glasBasinFill);
+	    			if(glasBasinFill == GLASBASINSIZE){
+	    				glasBasinFillText.setText("VOLL!!");
+	    			}
+					spriteObject.kill();
+				}
+				else{
+					if(glasBasinFill >= GLASBASINSIZE){
+					}
+					spriteObject.reset(spriteObject.relX, spriteObject.relY);
+					spriteObject.dragged = false;
+				}
+			}
+			else if(xPos < bioBasinXMax && xPos > BIOBASINXPOS && yPos < bioBasinYMax && yPos > BIOBASINYPOS){
+				if(spriteObject.trashtype == "Bio" && bioBasinFill < BIOBASINSIZE){
+					addPoints(1);
+	    			bioBasinFill++;
+	    			bioBasinFillText.setText(bioBasinFill);
+	    			if(bioBasinFill == BIOBASINSIZE){
+	    				bioBasinFillText.setText("VOLL!!");
+	    			}
+					spriteObject.kill();
+				}
+				else{
+					if(bioBasinFill >= BIOBASINSIZE){
+					}
+					spriteObject.reset(spriteObject.relX, spriteObject.relY);
+					spriteObject.dragged = false;
+				}
+			}
+			else{
+				spriteObject.reset(spriteObject.relX, spriteObject.relY);
+				spriteObject.dragged = false;
+			}
+
+
+		}
+
+		function addPoints(number){
+			gamePoints = gamePoints + number;
+			pointsText.setText(gamePoints);
+			clapping.play();
+		}
+
+		function subPoints(number){
+			gamePoints = gamePoints - number;
+			pointsText.setText(gamePoints);
+			falseSound.play();
+		}
+
+		function update() {
+
+		}
+		
+
+		function render() {
+		    
+		}
+
+
+    	function bandMove(){
+    		bandSlots.forEach(slotMove, this);
+
+    	}
+
+    	function slotMove(slot){
+    		if(slot.alive){
+	    		xPos = slot.x;
+	    		yPos = slot.y;
+
+
+	    		if(xPos > 800){
+	    			if(slot.type == 1){
+	    				subPoints(1);
+	    				slot.kill();
+	    			}
+	    			else{
+		    		    bandCounter++;
+		    			slot.reset(-42, yPos);
+		    			if(bandCounter == 4){
+		    				bandCounter = 0;
+		    				createTrash();
+		    			}
+	    			}
+	    		}
+	    		else{
+					if(slot.type == 1 && slot.dragged){
+							slot.relX = slot.relX +3;
+						}
+					else{
+						slot.reset(xPos + 3, yPos);
+						if(slot.type == 1){
+							slot.relX = xPos;
+						}			
+					}
+				}
+			}
+
+    	}
+
+    	function dragStart(object){
+    		object.dragged = true;
+    	}
+
+    	function furnanceClicked(){
+    		if(furnanceFill == FURNANCESIZE && chimneyFill + furnanceFill <= CHIMNEYSIZE){
+      			chimneyFill = chimneyFill + furnanceFill;
+    			furnanceFill = 0;
+    			furnanceFillText.setText(furnanceFill);
+    			if(chimneyFill >= CHIMNEYSIZE){
+    				chimneyFillText.setText("SMOK FILTERN!");
+    			}
+    			else{
+    				chimneyFillText.setText(chimneyFill);
+    			}
+    			addPoints(1);
+    		}
+    		else{
+    			//subPoints(1);
+    		}
+    	}
+
+    	function chimneyClicked(){
+    		if(chimneyFill == CHIMNEYSIZE){
+    			chimneyFill = 0;
+    			chimneyFillText.setText(chimneyFill);
+
+    			addPoints(1);
+    		}
+    	}
+
+    	function basinClicked(){
+    		if(basinPaperFill >= BASINSIZE && basinWaterFill >= 0){
+    			addPoints(1);
+    			basinPaperFill = 0;
+    			basinPaperFillText.setText(basinPaperFill);
+    			basinWaterFill = 0;
+    			basinWaterFillText.setText(basinWaterFill);
+    		}
+    		else{
+
+    		}
+    	}
+
+    	function tapClicked(){
+    		if(basinWaterFill < 1){
+    			basinWaterFill++;
+    			basinWaterFillText.setText("VOLL");
+    		}
+    	}
+
+    	function plasticBasinClicked(){
+    		if(plasticBasinFill >= PLASBASINSIZE){
+    			addPoints(1);
+    			plasticBasinFill = 0;
+    			plasticBasinFillText.setText(plasticBasinFill);
+
+    		}
+    	}
+
+    	function glasBasinClicked(){
+    		if(glasBasinFill >= GLASBASINSIZE){
+    			addPoints(1);
+    			glasBasinFill = 0;
+    			glasBasinFillText.setText(glasBasinFill);
+    		}
+    	}
+
+    	function bioBasinClicked(){
+    		if(bioBasinFill >= BIOBASINSIZE){
+    			addPoints(1);
+    			bioBasinFill = 0;
+    			bioBasinFillText.setText(bioBasinFill);
+    		}
+    	}
+
+		function createTrash() {
+		    var random1 = game.rnd.integerInRange(0, 4);
+		    var trash;
+		    switch(random1) {
+		        case 0:
+		            var random3 = game.rnd.integerInRange(0, rest.length - 1);
+		            trash = bandSlots.create(-50, 300, rest[random3]);
+		            trash.type = 1;
+		            trash.name = rest[random3];
+		            trash.trashtype = "Restmuell";
+		            trash.inputEnabled = true;
+	        		trash.input.enableDrag(true, true, false , 255, null, null);
+	        		trash.events.onDragStart.add(dragStart, this);
+	        		trash.events.onDragStop.add(check, this);
+	        		trash.dragged = false;
+	        		trash.relX = -50;
+	        		trash.relY = 300;
+		            break;
+		        case 1:
+		            var random3 = game.rnd.integerInRange(0, papier.length - 1);
+		            trash = bandSlots.create(-50, 300, papier[random3]);
+		            trash.type = 1;
+		            trash.name = papier[random3];
+		            trash.trashtype = "Papier";
+		         	trash.inputEnabled = true;
+	        		trash.input.enableDrag(true, true, false , 255, null, null);
+	        		trash.events.onDragStart.add(dragStart, this);
+	        		trash.events.onDragStop.add(check, this);
+	        		trash.dragged = false;
+	        		trash.relX = -50;
+	        		trash.relY = 300;
+		            break;
+		        case 2:
+		            var random3 = game.rnd.integerInRange(0, gp.length - 1);
+		            trash = bandSlots.create(-50, 300, gp[random3]);
+		            trash.type = 1;
+		            trash.name = gp[random3];
+		            trash.trashtype = "Gelber Punkt";
+		            trash.inputEnabled = true;
+	        		trash.input.enableDrag(true, true, false , 255, null, null);
+	        		trash.events.onDragStart.add(dragStart, this);
+	        		trash.events.onDragStop.add(check, this);
+	        		trash.dragged = false;
+	        		trash.relX = -50;
+	        		trash.relY = 300;
+		            break;
+		        case 3:
+		            var random3 = game.rnd.integerInRange(0, glas.length - 1);
+		            trash = bandSlots.create(-50, 300, glas[random3]);
+		            trash.type = 1;
+		            trash.name = glas[random3];
+		            trash.trashtype = "Glas";
+		            trash.inputEnabled = true;
+	        		trash.input.enableDrag(true, true, false , 255, null, null);
+	        		trash.events.onDragStart.add(dragStart, this);
+	        		trash.events.onDragStop.add(check, this);
+	        		trash.dragged = false;
+	        		trash.relX = -50;
+	        		trash.relY = 300;
+		            break;
+		        case 4:
+		            var random3 = game.rnd.integerInRange(0, bio.length - 1);
+		            trash = bandSlots.create(-50, 300, bio[random3]);
+		            trash.type = 1;
+		            trash.name = bio[random3];
+		            trash.trashtype = "Bio";
+		            trash.inputEnabled = true;
+	        		trash.input.enableDrag(true, true, false , 255, null, null);
+	        		trash.events.onDragStart.add(dragStart, this);
+	        		trash.events.onDragStop.add(check, this);
+	        		trash.dragged = false;
+	        		trash.relX = -50;
+	        		trash.relY = 300;
+		            break;
+		        case 5:
+		            var random3 = game.rnd.integerInRange(0, sonder.length - 1);
+		            trash = bandSlots.create(-50, 300, sonder[random3]);
+		            trash.type = 1;
+		            trash.name = sonder[random3];
+		            trash.trashtype = "Sondermuell";
+		            trash.inputEnabled = true;
+	        		trash.input.enableDrag(true, true, false , 255, null, null);
+	        		trash.events.onDragStart.add(dragStart, this);
+	        		trash.events.onDragStop.add(check, this);
+	        		trash.dragged = false;
+	        		trash.relX = -50;
+	        		trash.relY = 300;
+		            break;
+		        default:
+		            break;
+		    }
+    	}
+
+    };
+
+    </script>
+
+    </body>
+		
+</html>
