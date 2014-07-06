@@ -14,6 +14,13 @@
         function preload () {
         	var style = { font: "34px Segopr", fill: "#000000", align: "left" };
 
+        	game.load.spritesheet('waterFlow', 'assets/waterFlow.png', 18, 72, 32);
+
+			game.load.image('imgCh1Background', 'assets/chap1_background.jpg');
+			game.load.spritesheet('button1', 'assets/start.png',87,0);
+			game.load.spritesheet('button2', 'assets/arrow_next.png',71,0);
+
+
         	game.load.image('furnance', 'assets/furnance.png');
         	game.load.image('chimney', 'assets/chimney.png');
         	game.load.image('basin', 'assets/recBasin.png');
@@ -60,11 +67,11 @@
 
 		    game.load.audio('clapping', 'assets/clapping.ogg');
 			game.load.audio('falseError', 'assets/falseError.ogg');
-
+			game.load.audio('knock', 'assets/knock.ogg');
 
         }
         const FURNANCESIZE = 2;
-        const FURNANCEXPOS = 400;
+        const FURNANCEXPOS = 300;
         const FURNANCEYPOS = 80;
         const CHIMNEYSIZE = 4;
 
@@ -84,11 +91,20 @@
         const BIOBASINXPOS = 600;
         const BIOBASINYPOS = 50;
 
+        var plasticCount = 0;
+        var bioCount = 0;
+        var glasCount = 0;
+        var restCount = 0;
+        var paperCount = 0;
+        var trashCount = 0;
+        var endFlag = 0;
+        var endMoveCount = 0;
+
         var style = { font: "18px Arial", fill: "#000000", align: "left" };
 
         var gamePoints = 0;
+        var hiddenGamePoints = 0;
         
-
         var bandTimer;
         var bandCounter = 0;
 
@@ -111,17 +127,33 @@
         var bioBasin;
         var bioBasinFill = 0;
 
-        var bioBasin;
-        var bioBasinFill = 0;
-
         var bandSlots;
         var trashItems;
 
-        function create () {
-            //var background = game.add.sprite(game.world.centerX, game.world.centerY, 'imgCh1Background');
-			//background.anchor.setTo(0.5, 0.5);
+        var waterflow;
 
-			var dragImgs = game.add.group();
+        function create () {
+            var background = game.add.sprite(game.world.centerX, game.world.centerY, 'imgCh1Background');
+			background.anchor.setTo(0.5, 0.5);
+
+			clapping = game.add.audio('clapping');
+            falseSound = game.add.audio('falseError');
+            knock = game.add.audio('knock');
+
+	    	gameButton = game.add.button(360, 500, 'button1', gameForward, 0, 1 , 0, 1);
+	    	gameButton.onOverSound = knock;
+	    	gameButton.input = true;
+	    	gameButton.visible = true;
+
+	    	introductionText1 = game.add.text(100, 100, "", style);
+		   	introductionText1.visible = true;
+		   	introductionText1.setText("Was geschieht mit dem Müll, nachdem er abgeholt wurde?\n\nSieh dir die verschiedenen Stationen an und versuche herauszufinden\nwelcher Müll wohin kommt und was dort mit ihm geschieht!");
+
+			waterflow = game.add.sprite(300, 200, 'waterFlow');
+			waterflow.animations.add('flow');
+			waterflow.visible = false;
+			//waterflow.animations.play('flow', 150, true);
+
 			rest = new Array("Asche","Hundehaufen","Kugelschreiber","Spielzeug");
 		    papier = new Array("Briefumschlaege","Karton","Zeitung");
 		    gp = new Array("Konserve","Plastikbeutel","Duschgel","Joghurtbecher","Tetrapack");
@@ -129,76 +161,84 @@
 		    bio = new Array("Apfel","Teebeutel","Laub","Gemuese","Bananenschale","Brot","Fischgraete");
 		    sonder = new Array("Batterie","Energiesparlampe");
 
-
 			this.game.stage.backgroundColor = '#FFFF22';
-			
 
-			clapping = game.add.audio('clapping');
-            falseSound = game.add.audio('falseError');
-
-			
 			furnance = game.add.sprite(FURNANCEXPOS, FURNANCEYPOS, 'furnance');
 			furnance.inputEnabled = true;
 			furnance.pointerOver = true;
 			furnance.events.onInputDown.add(furnanceClicked, this);
+			furnance.visible = false;
 
-			furnanceFillText = game.add.text(FURNANCEXPOS, FURNANCEYPOS, furnanceFill, style);
+			furnanceFillText = game.add.text(FURNANCEXPOS + 200, FURNANCEYPOS + 80, furnanceFill, style);
 		   	furnanceFillText.visible = true;
 		   	furnanceFillText.setText(furnanceFill);
+		   	furnanceFillText.visible = false;
 
-		   	chimney = game.add.sprite(FURNANCEXPOS + 70, FURNANCEYPOS - 75, 'chimney');
+		   	chimney = game.add.sprite(FURNANCEXPOS + 62, FURNANCEYPOS - 49, 'chimney');
 		   	chimney.inputEnabled = true;
 		   	chimney.pointerOver = true;
 		   	chimney.events.onInputDown.add(chimneyClicked, this);
+		   	chimney.visible = false;
 
-		   	chimneyFillText = game.add.text(FURNANCEXPOS + 110, FURNANCEYPOS - 20, chimneyFill, style);
+		   	chimneyFillText = game.add.text(FURNANCEXPOS + 148, FURNANCEYPOS - 20, chimneyFill, style);
 		   	chimneyFillText.visible = true;
 		   	chimneyFillText.setText(chimneyFill);
+		   	chimneyFillText.visible = false;
 
 		    basin = game.add.sprite(BASINXPOS, BASINYPOS, 'basin');
 		    basin.inputEnabled = true;
 		    basin.pointerOver = true;
 		    basin.events.onInputDown.add(basinClicked, this);
+		    basin.visible = false;
 
  			basinPaperFillText = game.add.text(BASINXPOS + 20, BASINYPOS + 30, basinPaperFill, style);
  			basinPaperFillText.visible = true;
  			basinPaperFillText.setText(basinPaperFill);
+ 			basinPaperFillText.visible = false;
 
   			basinWaterFillText = game.add.text(BASINXPOS + 65, BASINYPOS + 30, basinWaterFill, style);
  			basinWaterFillText.visible = true;
  			basinWaterFillText.setText(basinWaterFill);
+ 			basinWaterFillText.visible = false;
 
  			tap = game.add.sprite(BASINXPOS + 70, BASINYPOS - 40, 'tap');
 		    tap.inputEnabled = true;
 		    tap.pointerOver = true;
 		    tap.events.onInputDown.add(tapClicked, this);
+		    tap.visible = false;
 
 		    plasticBasin = game.add.sprite(PLASBASINXPOS, PLASBASINYPOS, 'plasticBasin');
 		    plasticBasin.inputEnabled = true;
 		    plasticBasin.pointerOver = true;
 		    plasticBasin.events.onInputDown.add(plasticBasinClicked, this);
+		    plasticBasin.visible = false;
 
 		    plasticBasinFillText = game.add.text(PLASBASINXPOS + 20, PLASBASINYPOS + 30, plasticBasinFill, style);
  			plasticBasinFillText.visible = true;
  			plasticBasinFillText.setText(plasticBasinFill);
+ 			plasticBasinFillText.visible = false;
 
  			glasBasin = game.add.sprite(GLASBASINXPOS, GLASBASINYPOS, 'glasBasin');
 		    glasBasin.inputEnabled = true;
 		    glasBasin.pointerOver = true;
 		    glasBasin.events.onInputDown.add(glasBasinClicked, this);
+		    glasBasin.visible = false;
 
 		    glasBasinFillText = game.add.text(GLASBASINXPOS + 20, GLASBASINYPOS + 30, glasBasinFill, style);
  			glasBasinFillText.visible = true;
  			glasBasinFillText.setText(glasBasinFill);
+ 			glasBasinFillText.visible = false;
 
  			bioBasin = game.add.sprite(BIOBASINXPOS, BIOBASINYPOS, 'bioMuell');
 		    bioBasin.inputEnabled = true;
 		    bioBasin.pointerOver = true;
 		    bioBasin.events.onInputDown.add(bioBasinClicked, this);
+		    bioBasin.visible = false;
 
 		    bioBasinFillText = game.add.text(BIOBASINXPOS + 20, BIOBASINYPOS + 30, bioBasinFill, style);
  			bioBasinFillText.visible = true;
  			bioBasinFillText.setText(bioBasinFill);
+ 			bioBasinFillText.visible = false;
 
         	trashItems = game.add.group();
         	bandSlots = game.add.group();
@@ -206,22 +246,47 @@
 		    for (var i = 0; i < 17; i++)
 		    {
 		    	if(i==16){
-		    		var tempSprite = bandSlots.create(-54 + i*50, 300, 'bandSlot2');
+		    		var tempSprite = bandSlots.create(-51 + i*50, 300, 'bandSlot2');
 		    	}
 		    	else{
 		        	var tempSprite = bandSlots.create(-50 + i*50, 300, 'bandSlot');
 		       	}
 		       	tempSprite.type = 0;
+		       	tempSprite.visible = false;
 		    }
+
 		    bandTimer = game.time.create(false);
 		   	bandTimer.loop(41, bandMove, this);
-		   	bandTimer.start();
+		   	//bandTimer.start();
 
 		   	pointsText = game.add.text(10, 10, gamePoints, style);
 		   	pointsText.visible = true;
-
 		}	
 
+		function gameForward(){
+			gameButton.input = false;
+			gameButton.visible = false;
+			introductionText1.visible = false;
+
+			waterflow.visible = true;
+			furnance.visible = true;
+			furnanceFillText.visible = true;
+			chimney.visible = true;
+			chimneyFillText.visible = true;
+			basin.visible = true;
+			basinPaperFillText.visible = true;
+			basinWaterFillText.visible = true;
+		 	tap.visible = true;
+		 	plasticBasin.visible = true;
+		 	plasticBasinFillText.visible = true;
+		 	glasBasin.visible = true;
+		 	glasBasinFillText.visible = true;
+		 	bioBasin.visible = true;
+		 	bioBasinFillText.visible = true;
+		 	if(endFlag == 0){
+		 		bandTimer.start();
+		 	}
+		}
 
 		function check(spriteObject){
 
@@ -333,14 +398,13 @@
 				spriteObject.reset(spriteObject.relX, spriteObject.relY);
 				spriteObject.dragged = false;
 			}
-
-
 		}
 
 		function addPoints(number){
 			gamePoints = gamePoints + number;
 			pointsText.setText(gamePoints);
 			clapping.play();
+			hiddenGamePoints++;
 		}
 
 		function subPoints(number){
@@ -358,45 +422,92 @@
 		    
 		}
 
-
     	function bandMove(){
     		bandSlots.forEach(slotMove, this);
-
     	}
 
     	function slotMove(slot){
-    		if(slot.alive){
-	    		xPos = slot.x;
-	    		yPos = slot.y;
+    		if(endMoveCount <= 5000){
+    			if(endFlag == 1){
+    				endMoveCount++;
+    			}
+	    		if(slot.alive){
+		    		xPos = slot.x;
+		    		yPos = slot.y;
 
-
-	    		if(xPos > 800){
-	    			if(slot.type == 1){
-	    				subPoints(1);
-	    				slot.kill();
-	    			}
-	    			else{
-		    		    bandCounter++;
-		    			slot.reset(-42, yPos);
-		    			if(bandCounter == 4){
-		    				bandCounter = 0;
-		    				createTrash();
+		    		if(xPos > 800){
+		    			if(slot.type == 1){
+		    				subPoints(1);
+		    				slot.kill();
 		    			}
-	    			}
-	    		}
-	    		else{
-					if(slot.type == 1 && slot.dragged){
-							slot.relX = slot.relX +3;
+		    			else{
+			    		    bandCounter++;
+			    			slot.reset(-42, yPos);
+			    			if(bandCounter == 4){
+			    				bandCounter = 0;
+			    				createTrash();
+			    			}
+		    			}
+		    		}
+		    		else{
+						if(slot.type == 1 && slot.dragged){
+								slot.relX = slot.relX +3;
+							}
+						else{
+							slot.reset(xPos + 3, yPos);
+							if(slot.type == 1){
+								slot.relX = xPos;
+							}			
 						}
-					else{
-						slot.reset(xPos + 3, yPos);
-						if(slot.type == 1){
-							slot.relX = xPos;
-						}			
 					}
 				}
 			}
+			else{
+				bandTimer.stop();
+				stopGame();
+			}
+    	}
 
+    	function stopGame(){
+	    	endButton = game.add.button(650, 500, 'button2', endGame, 0, 1 , 0, 1);
+	    	endButton.onOverSound = knock;
+	    	endButton.input = true;
+
+			bandSlots.forEach(deleteSlot, this);
+
+			waterflow.visible = false;
+			furnance.visible = false;
+			furnanceFillText.visible = false;
+			chimney.visible = false;
+			chimneyFillText.visible = false;
+			basin.visible = false;
+			basinPaperFillText.visible = false;
+			basinWaterFillText.visible = false;
+		 	tap.visible = false;
+		 	plasticBasin.visible = false;
+		 	plasticBasinFillText.visible = false;
+		 	glasBasin.visible = false;
+		 	glasBasinFillText.visible = false;
+		 	bioBasin.visible = false;
+		 	bioBasinFillText.visible = false;
+
+
+    		var percentage = Math.floor(hiddenGamePoints / (plasticCount + restCount + bioCount + paperCount + glasCount + Math.floor(restCount/2) + Math.floor(restCount/4) + Math.floor(paperCount/4) ) * 100);
+
+
+    		endText = game.add.text(game.world.centerX, game.world.centerY , "GG", style);
+            endText.setText('Glückwunsch!\nDu hast ' +  percentage + '% der Punkte erreicht.\nDu hast dir die Goldmedaille verdient!');
+            endText.visible = true;
+
+    	}
+
+
+    	function endGame(){
+
+    	}
+
+    	function deleteSlot(slotObj){
+    		slotObj.kill();
     	}
 
     	function dragStart(object){
@@ -455,7 +566,6 @@
     			addPoints(1);
     			plasticBasinFill = 0;
     			plasticBasinFillText.setText(plasticBasinFill);
-
     		}
     	}
 
@@ -478,94 +588,110 @@
 		function createTrash() {
 		    var random1 = game.rnd.integerInRange(0, 4);
 		    var trash;
-		    switch(random1) {
-		        case 0:
-		            var random3 = game.rnd.integerInRange(0, rest.length - 1);
-		            trash = bandSlots.create(-50, 300, rest[random3]);
-		            trash.type = 1;
-		            trash.name = rest[random3];
-		            trash.trashtype = "Restmuell";
-		            trash.inputEnabled = true;
-	        		trash.input.enableDrag(true, true, false , 255, null, null);
-	        		trash.events.onDragStart.add(dragStart, this);
-	        		trash.events.onDragStop.add(check, this);
-	        		trash.dragged = false;
-	        		trash.relX = -50;
-	        		trash.relY = 300;
-		            break;
-		        case 1:
-		            var random3 = game.rnd.integerInRange(0, papier.length - 1);
-		            trash = bandSlots.create(-50, 300, papier[random3]);
-		            trash.type = 1;
-		            trash.name = papier[random3];
-		            trash.trashtype = "Papier";
-		         	trash.inputEnabled = true;
-	        		trash.input.enableDrag(true, true, false , 255, null, null);
-	        		trash.events.onDragStart.add(dragStart, this);
-	        		trash.events.onDragStop.add(check, this);
-	        		trash.dragged = false;
-	        		trash.relX = -50;
-	        		trash.relY = 300;
-		            break;
-		        case 2:
-		            var random3 = game.rnd.integerInRange(0, gp.length - 1);
-		            trash = bandSlots.create(-50, 300, gp[random3]);
-		            trash.type = 1;
-		            trash.name = gp[random3];
-		            trash.trashtype = "Gelber Punkt";
-		            trash.inputEnabled = true;
-	        		trash.input.enableDrag(true, true, false , 255, null, null);
-	        		trash.events.onDragStart.add(dragStart, this);
-	        		trash.events.onDragStop.add(check, this);
-	        		trash.dragged = false;
-	        		trash.relX = -50;
-	        		trash.relY = 300;
-		            break;
-		        case 3:
-		            var random3 = game.rnd.integerInRange(0, glas.length - 1);
-		            trash = bandSlots.create(-50, 300, glas[random3]);
-		            trash.type = 1;
-		            trash.name = glas[random3];
-		            trash.trashtype = "Glas";
-		            trash.inputEnabled = true;
-	        		trash.input.enableDrag(true, true, false , 255, null, null);
-	        		trash.events.onDragStart.add(dragStart, this);
-	        		trash.events.onDragStop.add(check, this);
-	        		trash.dragged = false;
-	        		trash.relX = -50;
-	        		trash.relY = 300;
-		            break;
-		        case 4:
-		            var random3 = game.rnd.integerInRange(0, bio.length - 1);
-		            trash = bandSlots.create(-50, 300, bio[random3]);
-		            trash.type = 1;
-		            trash.name = bio[random3];
-		            trash.trashtype = "Bio";
-		            trash.inputEnabled = true;
-	        		trash.input.enableDrag(true, true, false , 255, null, null);
-	        		trash.events.onDragStart.add(dragStart, this);
-	        		trash.events.onDragStop.add(check, this);
-	        		trash.dragged = false;
-	        		trash.relX = -50;
-	        		trash.relY = 300;
-		            break;
-		        case 5:
-		            var random3 = game.rnd.integerInRange(0, sonder.length - 1);
-		            trash = bandSlots.create(-50, 300, sonder[random3]);
-		            trash.type = 1;
-		            trash.name = sonder[random3];
-		            trash.trashtype = "Sondermuell";
-		            trash.inputEnabled = true;
-	        		trash.input.enableDrag(true, true, false , 255, null, null);
-	        		trash.events.onDragStart.add(dragStart, this);
-	        		trash.events.onDragStop.add(check, this);
-	        		trash.dragged = false;
-	        		trash.relX = -50;
-	        		trash.relY = 300;
-		            break;
-		        default:
-		            break;
+		    if(trashCount < 10){
+			    switch(random1) {
+			        case 0:
+			            var random3 = game.rnd.integerInRange(0, rest.length - 1);
+			            trash = bandSlots.create(-60, 295, rest[random3]);
+			            trash.type = 1;
+			            trash.name = rest[random3];
+			            trash.trashtype = "Restmuell";
+			            trash.inputEnabled = true;
+		        		trash.input.enableDrag(true, true, false , 255, null, null);
+		        		trash.events.onDragStart.add(dragStart, this);
+		        		trash.events.onDragStop.add(check, this);
+		        		trash.dragged = false;
+		        		trash.relX = -50;
+		        		trash.relY = 300;
+		        		restCount++;
+		        		trashCount++;
+			            break;
+			        case 1:
+			            var random3 = game.rnd.integerInRange(0, papier.length - 1);
+			            trash = bandSlots.create(-60, 295, papier[random3]);
+			            trash.type = 1;
+			            trash.name = papier[random3];
+			            trash.trashtype = "Papier";
+			         	trash.inputEnabled = true;
+		        		trash.input.enableDrag(true, true, false , 255, null, null);
+		        		trash.events.onDragStart.add(dragStart, this);
+		        		trash.events.onDragStop.add(check, this);
+		        		trash.dragged = false;
+		        		trash.relX = -50;
+		        		trash.relY = 300;
+		        		paperCount++;
+		        		trashCount++;
+			            break;
+			        case 2:
+			            var random3 = game.rnd.integerInRange(0, gp.length - 1);
+			            trash = bandSlots.create(-60, 295, gp[random3]);
+			            trash.type = 1;
+			            trash.name = gp[random3];
+			            trash.trashtype = "Gelber Punkt";
+			            trash.inputEnabled = true;
+		        		trash.input.enableDrag(true, true, false , 255, null, null);
+		        		trash.events.onDragStart.add(dragStart, this);
+		        		trash.events.onDragStop.add(check, this);
+		        		trash.dragged = false;
+		        		trash.relX = -50;
+		        		trash.relY = 300;
+		        		plasticCount++;
+		        		trashCount++;
+			            break;
+			        case 3:
+			            var random3 = game.rnd.integerInRange(0, glas.length - 1);
+			            trash = bandSlots.create(-60, 295, glas[random3]);
+			            trash.type = 1;
+			            trash.name = glas[random3];
+			            trash.trashtype = "Glas";
+			            trash.inputEnabled = true;
+		        		trash.input.enableDrag(true, true, false , 255, null, null);
+		        		trash.events.onDragStart.add(dragStart, this);
+		        		trash.events.onDragStop.add(check, this);
+		        		trash.dragged = false;
+		        		trash.relX = -50;
+		        		trash.relY = 300;
+		        		glasCount++;
+		        		trashCount++;
+			            break;
+			        case 4:
+			            var random3 = game.rnd.integerInRange(0, bio.length - 1);
+			            trash = bandSlots.create(-60, 295, bio[random3]);
+			            trash.type = 1;
+			            trash.name = bio[random3];
+			            trash.trashtype = "Bio";
+			            trash.inputEnabled = true;
+		        		trash.input.enableDrag(true, true, false , 255, null, null);
+		        		trash.events.onDragStart.add(dragStart, this);
+		        		trash.events.onDragStop.add(check, this);
+		        		trash.dragged = false;
+		        		trash.relX = -50;
+		        		trash.relY = 300;
+		        		bioCount++;
+		        		trashCount++;
+			            break;
+			        case 5:
+			            var random3 = game.rnd.integerInRange(0, sonder.length - 1);
+			            trash = bandSlots.create(-60, 295, sonder[random3]);
+			            trash.type = 1;
+			            trash.name = sonder[random3];
+			            trash.trashtype = "Sondermuell";
+			            trash.inputEnabled = true;
+		        		trash.input.enableDrag(true, true, false , 255, null, null);
+		        		trash.events.onDragStart.add(dragStart, this);
+		        		trash.events.onDragStop.add(check, this);
+		        		trash.dragged = false;
+		        		trash.relX = -50;
+		        		trash.relY = 300;
+
+			            break;
+			        default:
+			            break;
+				}
 		    }
+		    else{
+					endFlag = 1;
+			}
     	}
 
     };
